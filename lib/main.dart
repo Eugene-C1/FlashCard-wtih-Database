@@ -1,9 +1,9 @@
 // main.dart
 import 'package:flutter/material.dart';
 
+import 'sharedpreferences.dart';
 import 'sql_helper.dart';
 import 'flashcardpage.dart';
-import 'home.dart';
 
 void main() {
   runApp(MyApp());
@@ -19,18 +19,18 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.orange,
         ),
-        home: HomePage());
+        home: ListPage());
   }
 }
 
-class HomePage extends StatefulWidget {
+class ListPage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
-  _HomePageState createState() => _HomePageState();
+  _ListPageState createState() => _ListPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _ListPageState extends State<ListPage> {
   // All journals
   List<Map<String, dynamic>> _journals = [];
 
@@ -38,16 +38,24 @@ class _HomePageState extends State<HomePage> {
   // This function is used to fetch all data from the database
   void _refreshJournals() async {
     final data = await SQLHelper.getItems();
-    setState(() {
-      _journals = data;
-      _isLoading = false;
-    });
+    setState(
+      () {
+        _journals = data;
+        _isLoading = false;
+      },
+    );
   }
 
+  int points = 0;
   @override
   void initState() {
     super.initState();
     _refreshJournals(); // Loading the diary when the app starts
+    MySharedPreferences.instance
+        .getIntegerValue("points")
+        .then((value) => setState(() {
+              points = value;
+            }));
   }
 
   TextEditingController _questionController = new TextEditingController();
@@ -83,8 +91,8 @@ class _HomePageState extends State<HomePage> {
                   //Overflow checkz                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              `
                   textInputAction: TextInputAction.newline,
                   keyboardType: TextInputType.multiline,
-                  maxLines: null,
-                  minLines: null,
+                  maxLines: 5,
+                  minLines: 1,
                   controller: _questionController,
                   decoration: InputDecoration(
                     hintText: 'Question',
@@ -101,8 +109,8 @@ class _HomePageState extends State<HomePage> {
                     TextField(
                       textInputAction: TextInputAction.newline,
                       keyboardType: TextInputType.multiline,
-                      maxLines: null,
-                      minLines: null,
+                      maxLines: 5,
+                      minLines: 1,
                       controller: _answerController,
                       decoration: InputDecoration(
                         hintText: 'Answer',
@@ -134,7 +142,8 @@ class _HomePageState extends State<HomePage> {
                     Navigator.of(context).pop();
                   },
                   child: Text(id == null ? 'Create New' : 'Update'),
-                )
+                ),
+                Center(child: Text('$points')),
               ],
             ),
           ),
@@ -182,24 +191,24 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.orange[200],
                 margin: EdgeInsets.all(15),
                 child: ListTile(
-                    title: Text(_journals[index]['question']),
-                    subtitle: Text(_journals[index]['answer']),
-                    trailing: SizedBox(
-                      width: 100,
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit),
-                            onPressed: () => _showForm(_journals[index]['id']),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () =>
-                                _deleteItem(_journals[index]['id']),
-                          ),
-                        ],
-                      ),
-                    )),
+                  title: Text(_journals[index]['question']),
+                  subtitle: Text(_journals[index]['answer']),
+                  trailing: SizedBox(
+                    width: 100,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () => _showForm(_journals[index]['id']),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () => _deleteItem(_journals[index]['id']),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
       floatingActionButton: Column(
@@ -214,15 +223,16 @@ class _HomePageState extends State<HomePage> {
             height: 10,
           ),
           FloatingActionButton(
-              heroTag: 'Next Page Button',
-              child: Icon(Icons.check),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const FlashCardPage(),
-                  ),
-                );
-              }),
+            heroTag: 'Next Page Button',
+            child: Icon(Icons.check),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => FlashCardPage(),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );

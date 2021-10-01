@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flip_card/flip_card.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'flashcard.dart';
 import 'flashcard_view.dart';
 import 'sql_helper.dart';
+import 'quizpage.dart';
 
 class FlashCardPage extends StatefulWidget {
   const FlashCardPage({Key? key}) : super(key: key);
@@ -35,25 +37,29 @@ class _FlashCardPageState extends State<FlashCardPage> {
   //TextEditingController _descriptionController = new TextEditingController();
 
   int _currentIndex = 0;
-
   @override
   Widget build(BuildContext context) {
+    int? count = _journals.length;
+    int currentNumber = _currentIndex + 1;
     return MaterialApp(
       home: Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Text('$currentNumber / $count'),
               SizedBox(
-                  width: 250,
-                  height: 250,
-                  child: FlipCard(
-                      front: FlashcardView(
-                        text: _journals[_currentIndex]['question'],
-                      ),
-                      back: FlashcardView(
-                        text: _journals[_currentIndex]['answer'],
-                      ))),
+                width: 250,
+                height: 250,
+                child: FlipCard(
+                  front: FlashcardView(
+                    text: _journals[_currentIndex]['question'],
+                  ),
+                  back: FlashcardView(
+                    text: _journals[_currentIndex]['answer'],
+                  ),
+                ),
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -66,9 +72,20 @@ class _FlashCardPageState extends State<FlashCardPage> {
                       icon: Icon(Icons.chevron_right),
                       label: Text('Next')),
                 ],
-              )
+              ),
             ],
           ),
+        ),
+        floatingActionButton: new FloatingActionButton(
+          heroTag: 'Next Page Button',
+          child: Icon(Icons.check),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const QuizPage(),
+              ),
+            );
+          },
         ),
       ),
     );

@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart' as sql;
+import 'package:sqflite/sqflite.dart';
 
 class SQLHelper {
   static Future<void> createTables(sql.Database database) async {
@@ -70,5 +72,12 @@ class SQLHelper {
     } catch (err) {
       print("Something went wrong when deleting an item: $err");
     }
+  }
+
+  static Future<int?> getCount() async {
+    final db = await SQLHelper.db();
+    var x = await db.rawQuery('SELECT COUNT (*) from items');
+    int? count = Sqflite.firstIntValue(x);
+    return count;
   }
 }
